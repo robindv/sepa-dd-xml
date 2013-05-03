@@ -31,12 +31,16 @@ class SepaDirectDebitFile
 
 
     public $messageIdentification;
+    public $initiatingPartyName;
+    public $paymentInfoId;
     public $IBAN;
-    public $CreditorSchemeId;
+    public $BIC;
+    public $kvk;
+    public $requestedExecutionDate;
 
-    protected $numberOfTransactions = 0;
-    protected $xml;
-    protected $transactions;
+    private $numberOfTransactions = 0;
+    private $xml;
+    private $transactions;
     
     public function __construct()
     {
@@ -83,7 +87,6 @@ class SepaDirectDebitFile
     {
         $datetime = new DateTime();
         $creationDateTime = $datetime->format('Y-m-d\TH:i:s');
-        $requestedExecutionDate = $datetime->format('Y-m-d');
         
 
         /* Groupheader */
@@ -102,7 +105,7 @@ class SepaDirectDebitFile
         $PaymentInformation->PmtTpInf->addChild('LclInstrm')->addChild('Cd','CORE'); /* ISO: 2.11, 2.12 */
         $PaymentInformation->PmtTpInf->addChild('SeqTp','OOFF'); /* ISO: 2.14 */
         
-        $PaymentInformation->addChild('ReqdColltnDt', $requestedExecutionDate);  /* ISO: 2.18 */
+        $PaymentInformation->addChild('ReqdColltnDt', $this->requestedExecutionDate);  /* ISO: 2.18 */
         $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->initiatingPartyName); /* ISO: 2.19*/
         $PaymentInformation->addChild('CdtrAcct')->addChild('Id')->addChild('IBAN',$this->IBAN) ; /* ISO: 2.20 */
         $PaymentInformation->addChild('CdtrAgt')->addChild('FinInstnId')->addChild('BIC',$this->BIC); /* ISO: 2.21 */
