@@ -27,7 +27,7 @@
 class SepaDirectDebitFile
 {
 
-    const INITIAL_STRING = '<?xml version="1.0" encoding="utf-8"?><Document xsi:schemaLocation="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02 pain.008.001.02.xsd" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"></Document>';
+    const INITIAL_STRING = '<?xml version="1.0" encoding="utf-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"></Document>';
 
 
     public $messageIdentification;
@@ -98,13 +98,14 @@ class SepaDirectDebitFile
         $PaymentInformation->addChild('PmtInfId', $this->paymentInfoId); /* ISO: 2.1 */
         $PaymentInformation->addChild('PmtMtd', "DD"); /* ISO: 2.2 */
 
+        $PaymentInformation->addChild('PmtTpInf')->addChild('SvcLvl')->addChild('Cd','SEPA'); /* ISO: 2.9 */
+        $PaymentInformation->PmtTpInf->addChild('LclInstrm')->addChild('Cd','CORE'); /* ISO: 2.11, 2.12 */
+        $PaymentInformation->PmtTpInf->addChild('SeqTp','OOFF'); /* ISO: 2.14 */
+        
         $PaymentInformation->addChild('ReqdColltnDt', $requestedExecutionDate);  /* ISO: 2.18 */
         $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->initiatingPartyName); /* ISO: 2.19*/
-        /* Creditor Account */
-        $CreditorAccount = $PaymentInformation->addChild('CdtrAcct'); /* ISO: 2.20 */
-        $CreditorAccount->addChild('Id')->addChild('IBAN',$this->IBAN);
-       
-        $PaymentInformation->addChild('CdtrAgt')->addChild('FinInstnId'); /* ISO: 2.21 */
+        $PaymentInformation->addChild('CdtrAcct')->addChild('Id')->addChild('IBAN',$this->IBAN) ; /* ISO: 2.20 */
+        $PaymentInformation->addChild('CdtrAgt')->addChild('FinInstnId')->addChild('BIC',$this->BIC); /* ISO: 2.21 */
         /* ISO: 2.27 */
         $PaymentInformation->addChild('CdtrSchmeId')->addChild('Id')->addChild('PrvtId')->addChild('Othr')->addChild('Id',$this->creditorid($this->kvk));
         $PaymentInformation->CdtrSchmeId->Id->PrvtId->Othr->addChild('SchmeNm')->addChild('Prtry','SEPA');
@@ -121,11 +122,11 @@ class SepaDirectDebitFile
             $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('MndtId',$transaction['ean']); /* ISO: 2.48 */
             $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('DtOfSgntr',$transaction['signature_date']); /* ISO: 2.49 */
             
-            $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId');
+            $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId')->addChild('BIC',$transaction['consumerbic']);
             
             $TransactionInformation->addChild('Dbtr')->addChild('Nm',$transaction['consumername']); /* ISO: 2.72 */
             $TransactionInformation->addChild('DbtrAcct')->addChild('Id')->addChild('IBAN',$transaction['consumeraccount']); /* ISO: 2.73 */
-            $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',substr($transaction['text'],0,140));
+            $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',substr($transaction['text'],0,140)); /* ISO: 2.89 */
             
         }
         
