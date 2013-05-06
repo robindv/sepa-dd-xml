@@ -161,7 +161,7 @@ class SepaDirectDebitFile
      */    
     private function floatToCurrency($amount)
     {
-        return sprintf("%01.2f", $amount);
+        return number_format($amount, 2, '.', '');
     }
     
 
