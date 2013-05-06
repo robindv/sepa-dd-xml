@@ -20,7 +20,7 @@
  *          (Jérémy Cambon, Ianaré Sévi and Vincent MOMIN)       
  * 
  * @author Robin de Vries <robin@celp.nl>
- * @version 2013-05-03  
+ * @version 2013-05-06  
  */
 
 
@@ -35,8 +35,9 @@ class SepaDirectDebitFile
     public $paymentInfoId;
     public $IBAN;
     public $BIC;
-    public $kvk;
+    public $creditorId;
     public $requestedExecutionDate;
+
 
     private $numberOfTransactions = 0;
     private $xml;
@@ -94,7 +95,7 @@ class SepaDirectDebitFile
         $GroupHeader->addChild('MsgId', $this->messageIdentification); /* ISO: 1.1 */
         $GroupHeader->addChild('CreDtTm', $creationDateTime); /* ISO: 1.2 */ 
         $GroupHeader->addChild('NbOfTxs', $this->numberOfTransactions); /* ISO: 1.6 */
-        $GroupHeader->addChild('InitgPty')->addChild('Nm', $this->initiatingPartyName); /* ISO: 1.8 */
+        $GroupHeader->addChild('InitgPty')->addChild('Nm', $this->alphanumeric($this->initiatingPartyName,70)); /* ISO: 1.8 */
         
         /* Payment Information */
         $PaymentInformation = $this->xml->CstmrDrctDbtInitn->addChild('PmtInf'); /* ISO: 2.0 */
@@ -106,11 +107,11 @@ class SepaDirectDebitFile
         $PaymentInformation->PmtTpInf->addChild('SeqTp','OOFF'); /* ISO: 2.14 */
         
         $PaymentInformation->addChild('ReqdColltnDt', $this->requestedExecutionDate);  /* ISO: 2.18 */
-        $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->initiatingPartyName); /* ISO: 2.19*/
+        $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->alphanumeric($this->initiatingPartyName,70)); /* ISO: 2.19*/
         $PaymentInformation->addChild('CdtrAcct')->addChild('Id')->addChild('IBAN',$this->IBAN) ; /* ISO: 2.20 */
         $PaymentInformation->addChild('CdtrAgt')->addChild('FinInstnId')->addChild('BIC',$this->BIC); /* ISO: 2.21 */
         /* ISO: 2.27 */
-        $PaymentInformation->addChild('CdtrSchmeId')->addChild('Id')->addChild('PrvtId')->addChild('Othr')->addChild('Id',$this->creditorid($this->kvk));
+        $PaymentInformation->addChild('CdtrSchmeId')->addChild('Id')->addChild('PrvtId')->addChild('Othr')->addChild('Id',$this->creditorId);
         $PaymentInformation->CdtrSchmeId->Id->PrvtId->Othr->addChild('SchmeNm')->addChild('Prtry','SEPA');
         
         /* Transactions */
@@ -127,9 +128,9 @@ class SepaDirectDebitFile
             
             $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId')->addChild('BIC',$transaction['consumerbic']);
             
-            $TransactionInformation->addChild('Dbtr')->addChild('Nm',$transaction['consumername']); /* ISO: 2.72 */
+            $TransactionInformation->addChild('Dbtr')->addChild('Nm', $this->alphanumeric($transaction['consumername'],70)); /* ISO: 2.72 */
             $TransactionInformation->addChild('DbtrAcct')->addChild('Id')->addChild('IBAN',$transaction['consumeraccount']); /* ISO: 2.73 */
-            $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',substr($transaction['text'],0,140)); /* ISO: 2.89 */
+            $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',$this->alphanumeric($transaction['text'],140)); /* ISO: 2.89 */
             
         }
         
@@ -146,20 +147,35 @@ class SepaDirectDebitFile
     }
     
     /**
+     * Calculate the Creditor Identifier.
+     * As described in attachment B, in the format description of the Rabobank.
+     */
+    public function calculateCreditorId($kvk, $location)
+    {
+        return 'NL'.(98 - ($kvk. $location.'232100') % 97) . 'ZZZ' . $kvk . '0000';
+        
+    }
+    
+    /**
      * Format an float as a monetary value.
      */    
-    protected function floatToCurrency($amount)
+    private function floatToCurrency($amount)
     {
         return sprintf("%01.2f", $amount);
     }
     
-    /**
-     * Calculate the Creditor Identifier.
-     * As described in attachment B, in the format description of the Rabobank.
-     */
-    protected function creditorid($kvk)
+
+    
+    private function alphanumeric($string, $length)
     {
-        return 'NL'.(98 - ($kvk.'0000'.'232100') % 97) . 'ZZZ' . $kvk . '0000';
+        /* Replace the special characters */
+        $string = preg_replace('~&([a-z]{1,2})(acute|cedil|circ|grave|lig|orn|ring|slash|th|tilde|uml);~i', '$1', htmlentities($string, ENT_QUOTES, 'UTF-8'));
+    
+        /* TODO: Remove the unwanted characters */
         
+        
+        /* Return the string with the given max. length */
+        return substr($string,0,$length);
+    
     }
 }
