@@ -9,9 +9,9 @@ Please be careful, the code hasn't been fully tested yet.
 
 Succesfully tested with:
  - Rabobank: Rabo SEPA TestService 
- - ING: Format Validation Tool
+ - ING Bank: Format Validation Tool
  - Equens: Equens Corporate Payment Services (CPS) Format Validation Tool
- - ABN Ambro: E-mail test service
+ - ABN AMRO: E-mail test service
  - BNG Bank: E-mail test service
 
 If you modify/fix this code, please send me your changes.
