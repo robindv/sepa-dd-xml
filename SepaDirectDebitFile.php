@@ -33,6 +33,7 @@ class SepaDirectDebitFile
     public $messageIdentification;
     public $initiatingPartyName;
     public $paymentInfoId;
+    public $sequenceType;
     public $IBAN;
     public $BIC;
     public $creditorId;
@@ -104,7 +105,7 @@ class SepaDirectDebitFile
 
         $PaymentInformation->addChild('PmtTpInf')->addChild('SvcLvl')->addChild('Cd','SEPA'); /* ISO: 2.9 */
         $PaymentInformation->PmtTpInf->addChild('LclInstrm')->addChild('Cd','CORE'); /* ISO: 2.11, 2.12 */
-        $PaymentInformation->PmtTpInf->addChild('SeqTp','OOFF'); /* ISO: 2.14 */
+        $PaymentInformation->PmtTpInf->addChild('SeqTp', $this->sequenceType); /* ISO: 2.14 */
         
         $PaymentInformation->addChild('ReqdColltnDt', $this->requestedExecutionDate);  /* ISO: 2.18 */
         $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->alphanumeric($this->initiatingPartyName,70)); /* ISO: 2.19*/
