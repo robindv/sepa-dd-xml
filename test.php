@@ -5,6 +5,7 @@ $sepaFile = new SepaDirectDebitFile();
 $sepaFile -> messageIdentification = 'uniqueFileID';
 $sepaFile -> initiatingPartyName = 'Initiating party name';
 $sepaFile -> paymentInfoId = '1';
+$sepaFile -> sequenceType = 'OOFF'; // May also be FRST, RCUR and FNAL
 $sepaFile -> IBAN = 'NL44RABO0123456789';
 $sepaFile -> BIC = 'RABONL2U';
 $sepaFile -> creditorId = $sepaFile->calculateCreditorId('12345678','0000');
