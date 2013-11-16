@@ -33,7 +33,6 @@ class SepaDirectDebitFile
     public $messageIdentification;
     public $initiatingPartyName;
     public $paymentInfoId;
-    public $sequenceType;
     public $IBAN;
     public $BIC;
     public $creditorId;
@@ -98,43 +97,46 @@ class SepaDirectDebitFile
         $GroupHeader->addChild('NbOfTxs', $this->numberOfTransactions); /* ISO: 1.6 */
         $GroupHeader->addChild('InitgPty')->addChild('Nm', $this->alphanumeric($this->initiatingPartyName,70)); /* ISO: 1.8 */
         
-        /* Payment Information */
-        $PaymentInformation = $this->xml->CstmrDrctDbtInitn->addChild('PmtInf'); /* ISO: 2.0 */
-        $PaymentInformation->addChild('PmtInfId', $this->paymentInfoId); /* ISO: 2.1 */
-        $PaymentInformation->addChild('PmtMtd', "DD"); /* ISO: 2.2 */
-
-        $PaymentInformation->addChild('PmtTpInf')->addChild('SvcLvl')->addChild('Cd','SEPA'); /* ISO: 2.9 */
-        $PaymentInformation->PmtTpInf->addChild('LclInstrm')->addChild('Cd','CORE'); /* ISO: 2.11, 2.12 */
-        $PaymentInformation->PmtTpInf->addChild('SeqTp', $this->sequenceType); /* ISO: 2.14 */
-        
-        $PaymentInformation->addChild('ReqdColltnDt', $this->requestedExecutionDate);  /* ISO: 2.18 */
-        $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->alphanumeric($this->initiatingPartyName,70)); /* ISO: 2.19*/
-        $PaymentInformation->addChild('CdtrAcct')->addChild('Id')->addChild('IBAN',$this->IBAN) ; /* ISO: 2.20 */
-        $PaymentInformation->addChild('CdtrAgt')->addChild('FinInstnId')->addChild('BIC',$this->BIC); /* ISO: 2.21 */
-        /* ISO: 2.27 */
-        $PaymentInformation->addChild('CdtrSchmeId')->addChild('Id')->addChild('PrvtId')->addChild('Othr')->addChild('Id',$this->creditorId);
-        $PaymentInformation->CdtrSchmeId->Id->PrvtId->Othr->addChild('SchmeNm')->addChild('Prtry','SEPA');
-        
-        /* Transactions */
-        foreach($this->transactions as $transaction)
+        foreach($this->transactions as $sequenceType => $transactions)
         {
-            $TransactionInformation = $PaymentInformation->addChild('DrctDbtTxInf'); /* ISO: 2.28 */
-            $TransactionInformation->addChild('PmtId')->addChild('EndToEndId',$transaction['end_to_end']); /* ISO: 2.29, 2.31 */
-            $TransactionInformation->addChild('InstdAmt',$this->floatToCurrency($transaction['amount'])); /* ISO: 2.44 */
-            $TransactionInformation->InstdAmt->addAttribute('Ccy','EUR');
             
-            $TransactionInformation->addChild('DrctDbtTx')->addChild('MndtRltdInf'); /* ISO: 2.46, 2.47 */
-            $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('MndtId',$transaction['ean']); /* ISO: 2.48 */
-            $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('DtOfSgntr',$transaction['signature_date']); /* ISO: 2.49 */
+            /* Payment Information */
+            $PaymentInformation = $this->xml->CstmrDrctDbtInitn->addChild('PmtInf'); /* ISO: 2.0 */
+            $PaymentInformation->addChild('PmtInfId', $this->alphanumeric($this->paymentInfoId.'-'.$sequenceType,35)); /* ISO: 2.1 */
+            $PaymentInformation->addChild('PmtMtd', "DD"); /* ISO: 2.2 */
+    
+            $PaymentInformation->addChild('PmtTpInf')->addChild('SvcLvl')->addChild('Cd','SEPA'); /* ISO: 2.9 */
+            $PaymentInformation->PmtTpInf->addChild('LclInstrm')->addChild('Cd','CORE'); /* ISO: 2.11, 2.12 */
+            $PaymentInformation->PmtTpInf->addChild('SeqTp', $sequenceType); /* ISO: 2.14 */
             
-            $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId')->addChild('BIC',$transaction['consumerbic']);
+            $PaymentInformation->addChild('ReqdColltnDt', $this->requestedExecutionDate);  /* ISO: 2.18 */
+            $PaymentInformation->addChild('Cdtr')->addChild('Nm', $this->alphanumeric($this->initiatingPartyName,70)); /* ISO: 2.19*/
+            $PaymentInformation->addChild('CdtrAcct')->addChild('Id')->addChild('IBAN',$this->IBAN) ; /* ISO: 2.20 */
+            $PaymentInformation->addChild('CdtrAgt')->addChild('FinInstnId')->addChild('BIC',$this->BIC); /* ISO: 2.21 */
+            /* ISO: 2.27 */
+            $PaymentInformation->addChild('CdtrSchmeId')->addChild('Id')->addChild('PrvtId')->addChild('Othr')->addChild('Id',$this->creditorId);
+            $PaymentInformation->CdtrSchmeId->Id->PrvtId->Othr->addChild('SchmeNm')->addChild('Prtry','SEPA');
             
-            $TransactionInformation->addChild('Dbtr')->addChild('Nm', $this->alphanumeric($transaction['consumername'],70)); /* ISO: 2.72 */
-            $TransactionInformation->addChild('DbtrAcct')->addChild('Id')->addChild('IBAN',$transaction['consumeraccount']); /* ISO: 2.73 */
-            $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',$this->alphanumeric($transaction['text'],140)); /* ISO: 2.89 */
-            
+            /* Transactions */
+            foreach($transactions as $transaction)
+            {
+                $TransactionInformation = $PaymentInformation->addChild('DrctDbtTxInf'); /* ISO: 2.28 */
+                $TransactionInformation->addChild('PmtId')->addChild('EndToEndId',$transaction['end_to_end']); /* ISO: 2.29, 2.31 */
+                $TransactionInformation->addChild('InstdAmt',$this->floatToCurrency($transaction['amount'])); /* ISO: 2.44 */
+                $TransactionInformation->InstdAmt->addAttribute('Ccy','EUR');
+                
+                $TransactionInformation->addChild('DrctDbtTx')->addChild('MndtRltdInf'); /* ISO: 2.46, 2.47 */
+                $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('MndtId',$transaction['mandate_id']); /* ISO: 2.48 */
+                $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('DtOfSgntr',$transaction['mandate_signature_date']); /* ISO: 2.49 */
+                
+                $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId')->addChild('BIC',$transaction['consumerbic']);
+                
+                $TransactionInformation->addChild('Dbtr')->addChild('Nm', $this->alphanumeric($transaction['consumername'],70)); /* ISO: 2.72 */
+                $TransactionInformation->addChild('DbtrAcct')->addChild('Id')->addChild('IBAN',$transaction['consumeraccount']); /* ISO: 2.73 */
+                $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',$this->alphanumeric($transaction['text'],140)); /* ISO: 2.89 */
+                
+            }
         }
-        
     }
     
     /**
@@ -142,7 +144,7 @@ class SepaDirectDebitFile
      */
     public function addTransaction($transaction)
     {
-        $this->transactions[] = $transaction;
+        $this->transactions[$transaction{'sequence_type'}][] = $transaction;
         $this->numberOfTransactions++;
         
     }

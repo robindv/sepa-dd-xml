@@ -15,3 +15,9 @@ Succesfully tested with:
  - BNG Bank: E-mail test service
 
 If you modify/fix this code, please send me your changes.
+
+Update 16 november 2013:
+------------------------
+Now each transaction can have its own sequence type (OOFF/FRST/RCUR/FNAL).
+Transactions are grouped by sequence type.
+Warning: API has changed, please check the example
