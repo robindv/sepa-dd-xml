@@ -8,12 +8,12 @@ $sepaFile -> paymentInfoId = '1';
 $sepaFile -> IBAN = 'NL44RABO0123456789';
 $sepaFile -> BIC = 'RABONL2U';
 $sepaFile -> creditorId = $sepaFile->calculateCreditorId('12345678','0000');
-$sepaFile -> requestedExecutionDate = '2013-07-10';
+$sepaFile -> requestedExecutionDate = '2013-12-10';
 
 $sepaFile -> addTransaction(
     array('end_to_end' => 'endtoend1',
           'amount' => 13.50,
-          'mandate_id' => '123456789', /* Ean = unique authorization identifier */
+          'mandate_id' => '123456789',
           'mandate_signature_date'=>'2013-03-01',
           'consumername'=>'P. PUK',
           'consumeraccount'=>'NL44RABO0123456789',
