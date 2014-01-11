@@ -1,7 +1,7 @@
 <?php
-include "SepaDirectDebitFile.php";
+include "src/SepaDirectDebitFile.php";
 
-$sepaFile = new SepaDirectDebitFile();
+$sepaFile = new Celp\SepaDirectDebitFile();
 $sepaFile -> messageIdentification = 'uniqueFileID';
 $sepaFile -> initiatingPartyName = 'Initiating party name';
 $sepaFile -> paymentInfoId = '1';
