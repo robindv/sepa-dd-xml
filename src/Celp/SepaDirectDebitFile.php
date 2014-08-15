@@ -25,7 +25,6 @@
 
 namespace Celp;
 
-
 class SepaDirectDebitFile
 {
 
@@ -130,9 +129,14 @@ class SepaDirectDebitFile
                 $TransactionInformation->addChild('DrctDbtTx')->addChild('MndtRltdInf'); /* ISO: 2.46, 2.47 */
                 $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('MndtId',$transaction['mandate_id']); /* ISO: 2.48 */
                 $TransactionInformation->DrctDbtTx->MndtRltdInf->addChild('DtOfSgntr',$transaction['mandate_signature_date']); /* ISO: 2.49 */
-                
-                $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId')->addChild('BIC',$transaction['consumerbic']);
-                
+
+
+                if ($transaction['consumerbic']) {
+                    $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId')->addChild('BIC',$transaction['consumerbic']);
+                } else {
+                    $TransactionInformation->addChild('DbtrAgt')->addChild('FinInstnId');
+                }
+
                 $TransactionInformation->addChild('Dbtr')->addChild('Nm', $this->alphanumeric($transaction['consumername'],70)); /* ISO: 2.72 */
                 $TransactionInformation->addChild('DbtrAcct')->addChild('Id')->addChild('IBAN',$transaction['consumeraccount']); /* ISO: 2.73 */
                 $TransactionInformation->addChild('RmtInf')->addChild('Ustrd',$this->alphanumeric($transaction['text'],140)); /* ISO: 2.89 */
