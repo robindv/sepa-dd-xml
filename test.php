@@ -1,5 +1,5 @@
 <?php
-include "src/SepaDirectDebitFile.php";
+include "src/Celp/SepaDirectDebitFile.php";
 
 $sepaFile = new Celp\SepaDirectDebitFile();
 $sepaFile -> messageIdentification = 'uniqueFileID';
