@@ -1,7 +1,7 @@
 {
     "name": "celp/sepa-dd",
     "description": "Sepa Direct Debit generator for PHP",
-    "license": "GPL",
+    "license": "GPL-3.0-or-later",
     "authors": [
         {
             "name": "Robin de Vries",
