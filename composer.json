@@ -1,5 +1,5 @@
 {
-    "name": "celp/sepa-dd",
+    "name": "robindv/sepa-dd-xml",
     "description": "Sepa Direct Debit generator for PHP",
     "license": "GPL-3.0-or-later",
     "authors": [
@@ -13,8 +13,8 @@
 
     },
     "autoload" : {
-         "psr-0": {
-             "Celp": "src/"
+         "psr-4": {
+             "Celp\\": "src/Celp/"
          }
     }
 }
