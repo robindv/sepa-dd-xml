@@ -149,7 +149,7 @@ class SepaDirectDebitFile
      */
     public function addTransaction($transaction)
     {        
-        $this->transactions[$transaction{'sequence_type'}][] = $transaction;
+        $this->transactions[$transaction['sequence_type']][] = $transaction;
         $this->numberOfTransactions++;
         
     }
