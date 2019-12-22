@@ -23,6 +23,7 @@
  * @version 2013-11-16  
  */
 
+namespace Celp;
 
 class SepaDirectDebitFile
 {
@@ -86,7 +87,7 @@ class SepaDirectDebitFile
      */
     protected function generateXml()
     {
-        $datetime = new DateTime();
+        $datetime = new \DateTime();
         $creationDateTime = $datetime->format('Y-m-d\TH:i:s');
         
 
